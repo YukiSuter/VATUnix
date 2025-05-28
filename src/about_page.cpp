@@ -4,11 +4,13 @@
 
 AboutPage::AboutPage()
 : Gtk::Box(Gtk::Orientation::VERTICAL) {
-    auto file = Gio::File::create_for_path("assets/VATUNIX_Side_Dark.png");
+    auto file = Gio::File::create_for_path("assets/VATUNIX_Side_Dark_Small.png");
     auto texture = Gdk::Texture::create_from_file(file);
     m_picture.set_paintable(texture);
-    m_picture.set_content_fit(Gtk::ContentFit::CONTAIN);
-    m_picture.set_size_request(-1, 200);  // max height
+
+    m_picture.set_content_fit(Gtk::ContentFit::SCALE_DOWN);  // never scales up
+    m_picture.set_valign(Gtk::Align::CENTER);
+    m_picture.set_halign(Gtk::Align::CENTER);
 
     append(m_picture);
 
