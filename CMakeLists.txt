@@ -25,10 +25,23 @@ add_executable(VATUnix
         include/file_utils.h
         include/fts_page.h
         src/fts_page.cpp
-        include/json.hpp
+        src/wizard_buttons.cpp
+        include/wizard_buttons.h
+        src/cli_utils.cpp
+        include/cli_utils.h
+        src/softwares/euroscope.cpp
+        src/softwares/euroscope.h
+        src/wine_utils.cpp
+        include/wine_utils.h
 )
 
 # Link against GTKMM
-target_link_libraries(VATUnix ${GTKMM_LIBRARIES})
+target_link_libraries(VATUnix PRIVATE ${GTKMM_LIBRARIES})
 target_compile_options(VATUnix PRIVATE ${GTKMM_CFLAGS_OTHER})
+
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(VATUnix PRIVATE nlohmann_json::nlohmann_json)
+
+find_package(CURL REQUIRED)
+target_link_libraries(VATUnix PRIVATE CURL::libcurl)
 

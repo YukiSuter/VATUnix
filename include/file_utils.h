@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace FileUtils {
     // Ensures ~/Documents/VATUnix exists
@@ -15,6 +15,9 @@ namespace FileUtils {
 
     nlohmann::json load_settings();
     void save_settings(const nlohmann::json& j);
+
+    size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream);
+    bool download_to_folder(std::string url, std::string filename, int use_cached);
 
     template<typename T>
     T get_setting(const std::string& key, const T& fallback);

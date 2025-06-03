@@ -4,9 +4,8 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
-
-#include "json.hpp"
-using json = nlohmann::json;
+#include <curl/curl.h>
+#include <nlohmann/json.hpp>
 
 
 namespace FileUtils {
@@ -50,25 +49,41 @@ namespace FileUtils {
         return Glib::build_filename(get_vatunix_data_path(), "settings.json");
     }
 
-    json load_settings() {
+    bool download_to_folder(std::string url, std::string filename, int use_cached=1) {
+        std::string dir = Glib::build_filename(get_vatunix_data_path(), filename);
+        CURL* curl = curl_easy_init();
+        if (curl) {
+            std::ofstream file(dir, std::ios::binary);
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);  // Follow redirects
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+            return true;
+        }
+        return false;
+    }
+
+    nlohmann::json load_settings() {
         std::ifstream in(get_settings_path());
         if (!in) {
             std::cerr << "Failed to open settings.json\n";
-            return json{};  // return empty object if file missing
+            return nlohmann::json{};  // return empty object if file missing
         }
 
-        json j;
+        nlohmann::json j;
         try {
             in >> j;
         } catch (const std::exception& e) {
             std::cerr << "Failed to parse settings.json: " << e.what() << "\n";
-            return json{};
+            return nlohmann::json{};
         }
 
         return j;
     }
 
-    void save_settings(const json& j) {
+    void save_settings(const nlohmann::json& j) {
         std::ofstream out(get_settings_path());
         if (!out) {
             std::cerr << "Failed to write settings.json\n";
@@ -80,15 +95,21 @@ namespace FileUtils {
 
     template<typename T>
     T get_setting(const std::string& key, const T& fallback) {
-        json j = load_settings();
+        nlohmann::json j = load_settings();
         return j.value(key, fallback);
     }
 
     template<typename T>
     void set_setting(const std::string& key, const T& value) {
-        json j = load_settings();
+        nlohmann::json j = load_settings();
         j[key] = value;
         save_settings(j);
     }
 
 } // namespace FileUtils
+
+size_t FileUtils::write_data(void* ptr, size_t size, size_t nmemb, void* stream) {
+    std::ofstream* out = static_cast<std::ofstream*>(stream);
+    out->write(static_cast<char*>(ptr), size * nmemb);
+    return size * nmemb;
+}

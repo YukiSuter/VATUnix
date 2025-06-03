@@ -16,3 +16,12 @@ void VATUnix::on_activate() {
     window->present();
 }
 
+void VATUnix::update_prefix_dir(std::string new_dir) {
+    prefix_dir = new_dir;
+}
+
+std::string VATUnix::get_prefix_dir() {
+    return prefix_dir;
+}
+
+
