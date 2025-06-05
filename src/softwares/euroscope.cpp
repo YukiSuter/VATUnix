@@ -58,20 +58,23 @@ void Euroscope::set_config(const nlohmann::json& new_config) {
 int Euroscope::install() {
     // Write code that installs the program. Expect this function to be run using a future.
     try {
-        int result = std::system("winetricks --unattended iertutil msls31 msxml6 urlmon vcrun2022 wininet");
-
-        wine_utils::install_libraries("iertutil msls31 msxml6 urlmon vcrun2022 wininet");
+        int result = wine_utils::install_libraries("iertutil msls31 msxml6 urlmon vcrun2022 wininet");
 
         if (result != 0) {
             std::cout << "winetricks failed with code " << result << std::endl;
         }
+
         Glib::ustring selected_version = version_labels[dropdown.get_selected()];
         Glib::ustring version_to_use = (selected_version == "Latest") ? Glib::ustring(latest_version) : selected_version;
         std::string download_url = "https://euroscope.hu/install/EuroScopeSetup." + version_to_use + ".msi";
 
-        if (FileUtils::download_to_folder(download_url, "DownloadCache/EuroscopeInstaller.msi", 0)) {
+        int es_status;
 
+        if (FileUtils::download_to_folder(download_url, "DownloadCache/EuroscopeInstaller.msi", 0)) {
+            es_status = wine_utils::install_msi(FileUtils::get_vatunix_data_path() + "DownloadCache/EuroscopeInstaller.msi", 1, "EuroscopeInstallLogs");
         }
+
+        return es_status;
     } catch (const std::exception& e) {
         std::cout<<"Failure during Euroscope install attempt: " << e.what() << std::endl;
     }

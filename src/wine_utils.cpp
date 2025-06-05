@@ -8,6 +8,8 @@
 #include <memory>
 #include <giomm/file.h>
 #include <glibmm/fileutils.h>
+#include "../include/wine_utils.h"
+#include "AppGlobals.h"
 
 
 namespace wine_utils {
@@ -28,12 +30,12 @@ namespace wine_utils {
         return result;
     }
 
-    bool create_env(std::string prefix_dir, bool override) {
+    bool create_env(bool override) {
         try {
             if (override) {
-                if (Glib::file_test(prefix_dir, Glib::FileTest::IS_DIR)) {
+                if (Glib::file_test(AppGlobals::prefix_dir, Glib::FileTest::IS_DIR)) {
                     std::cout<<"Found existing directory. Overwriting..."<<std::endl;
-                    std::filesystem::remove_all(prefix_dir);
+                    std::filesystem::remove_all(AppGlobals::prefix_dir);
                 }
             }
 
@@ -47,11 +49,11 @@ namespace wine_utils {
                 std::cerr << "Warning: wineserver --kill returned non-zero (might be fine)\n";
             }
 
-            std::cout<<("WINEPREFIX=\"" + prefix_dir + "\" wine wineboot --init").c_str()<<std::endl;
-            std::system(("WINEPREFIX=\"" + prefix_dir + "\" wine wineboot --init").c_str());
-            std::system(("WINEPREFIX=\"" + prefix_dir + "\" wine winecfg -v win7").c_str());
+            std::cout<<("WINEPREFIX=\"" + AppGlobals::prefix_dir + "\" wine wineboot --init").c_str()<<std::endl;
+            std::system(("WINEPREFIX=\"" + AppGlobals::prefix_dir + "\" wine wineboot --init").c_str());
+            std::system(("WINEPREFIX=\"" + AppGlobals::prefix_dir + "\" wine winecfg -v win7").c_str());
 
-            std::string cmd = "WINEPREFIX=\"" + prefix_dir + "\" " + wineBin + " winecfg -v";
+            std::string cmd = "WINEPREFIX=\"" + AppGlobals::prefix_dir + "\" " + wineBin + " winecfg -v";
             std::system(cmd.c_str());
 
             return true;
@@ -62,7 +64,7 @@ namespace wine_utils {
         }
     }
 
-    int install_msi(std::string prefix_dir, std::string msi, bool quiet, std::string logfile="") {
+    int install_msi(std::string msi, bool quiet, std::string logfile) {
         try {
             std::string args;
 
@@ -72,7 +74,7 @@ namespace wine_utils {
                 args += " /l "+logfile;
             }
 
-            int rt = std::system(("WINEPREFIX=\"" + prefix_dir + "\" wine msiexec" + args + " /i "+msi).c_str());
+            int rt = std::system(("WINEPREFIX=\"" + AppGlobals::prefix_dir + "\" wine msiexec" + args + " /i "+msi).c_str());
             return rt;
         } catch (const std::exception& e) {
             std::cerr << "Error installing msi: " << e.what() << std::endl;
@@ -81,9 +83,9 @@ namespace wine_utils {
 
     }
 
-    int install_libraries(std::string prefix_dir, std::string libs)  {
+    int install_libraries(std::string libs)  {
         try {
-            int rt = std::system(("WINEPREFIX=\"" + prefix_dir + "\" winetricks --unattended " + libs).c_str());
+            int rt = std::system(("WINEPREFIX=\"" + AppGlobals::prefix_dir + "\" winetricks --unattended " + libs).c_str());
             return rt;
         } catch (const std::exception& e) {
             std::cerr << "Error installing libraries: " << e.what() << std::endl;
@@ -95,4 +97,3 @@ namespace wine_utils {
 }
 
 
-#include "../include/wine_utils.h"

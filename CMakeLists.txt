@@ -33,6 +33,13 @@ add_executable(VATUnix
         src/softwares/euroscope.h
         src/wine_utils.cpp
         include/wine_utils.h
+        src/FTS/start_page.cpp
+        src/FTS/dependencies_page.cpp
+        src/FTS/wine_page.cpp
+        src/FTS/software_page.cpp
+        src/FTS/software_choice_page.cpp
+        src/AppGlobals.cpp
+        include/AppGlobals.h
 )
 
 # Link against GTKMM
