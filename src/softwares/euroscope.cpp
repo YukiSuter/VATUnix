@@ -7,6 +7,7 @@
 
 #include <nlohmann/json.hpp>
 #include "file_utils.h"
+#include "wine_utils.h"
 
 extern std::vector<Glib::ustring> version_labels = {"Latest", "3.2.9"};
 extern std::string latest_version = "3.2.9";
@@ -58,6 +59,9 @@ int Euroscope::install() {
     // Write code that installs the program. Expect this function to be run using a future.
     try {
         int result = std::system("winetricks --unattended iertutil msls31 msxml6 urlmon vcrun2022 wininet");
+
+        wine_utils::install_libraries("iertutil msls31 msxml6 urlmon vcrun2022 wininet");
+
         if (result != 0) {
             std::cout << "winetricks failed with code " << result << std::endl;
         }

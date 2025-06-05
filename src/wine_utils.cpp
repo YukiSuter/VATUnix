@@ -61,6 +61,37 @@ namespace wine_utils {
             return 0;
         }
     }
+
+    int install_msi(std::string prefix_dir, std::string msi, bool quiet, std::string logfile="") {
+        try {
+            std::string args;
+
+            if (quiet) args+=" /q";
+
+            if (logfile.length() >0) {
+                args += " /l "+logfile;
+            }
+
+            int rt = std::system(("WINEPREFIX=\"" + prefix_dir + "\" wine msiexec" + args + " /i "+msi).c_str());
+            return rt;
+        } catch (const std::exception& e) {
+            std::cerr << "Error installing msi: " << e.what() << std::endl;
+            return 1;
+        }
+
+    }
+
+    int install_libraries(std::string prefix_dir, std::string libs)  {
+        try {
+            int rt = std::system(("WINEPREFIX=\"" + prefix_dir + "\" winetricks --unattended " + libs).c_str());
+            return rt;
+        } catch (const std::exception& e) {
+            std::cerr << "Error installing libraries: " << e.what() << std::endl;
+            return 1;
+        }
+    }
+
+
 }
 
 
